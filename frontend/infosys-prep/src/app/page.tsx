@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./page.module.css";
 import papers from "../data/papers.json";
 import type { Paper, Question } from "../lib/types";
@@ -30,6 +30,9 @@ export default function Home() {
     const [examStarted, setExamStarted] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [penalties, setPenalties] = useState(0);
+    const [reentryRequired, setReentryRequired] = useState(false);
+    const [reentrySeconds, setReentrySeconds] = useState(30);
+    const violationActive = useRef(false);
     const [darkMode, setDarkMode] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -75,16 +78,46 @@ export default function Home() {
         function onFullscreenChange() {
             const fullscreen = Boolean(document.fullscreenElement);
             setIsFullscreen(fullscreen);
-            if (examStarted && !submitted && !fullscreen) setPenalties((current) => current + 1);
+            if (examStarted && !submitted && !fullscreen) registerViolation();
+            if (fullscreen && violationActive.current) {
+                violationActive.current = false;
+                setReentryRequired(false);
+                setReentrySeconds(30);
+            }
         }
+        function onVisibilityChange() { if (examStarted && !submitted && document.visibilityState === "hidden") registerViolation(); }
+        function onWindowBlur() { if (examStarted && !submitted) registerViolation(); }
         document.addEventListener("fullscreenchange", onFullscreenChange);
-        return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+        document.addEventListener("visibilitychange", onVisibilityChange);
+        window.addEventListener("blur", onWindowBlur);
+        return () => { document.removeEventListener("fullscreenchange", onFullscreenChange); document.removeEventListener("visibilitychange", onVisibilityChange); window.removeEventListener("blur", onWindowBlur); };
     }, [examStarted, submitted]);
+
+    useEffect(() => {
+        if (!reentryRequired || submitted) return;
+        const timer = window.setInterval(() => setReentrySeconds((current) => {
+            if (current <= 1) {
+                window.clearInterval(timer);
+                setPenalties((value) => value + 1);
+                submitExam();
+                return 0;
+            }
+            return current - 1;
+        }), 1000);
+        return () => window.clearInterval(timer);
+    }, [reentryRequired, submitted]);
 
     const timeLabel = `${String(Math.floor(secondsLeft / 3600)).padStart(2, "0")}:${String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
     function questionsForSection(section: string) { return paperData.flatMap((paper) => paper.questions.filter((question) => question.section === section)); }
     function shuffled(items: Question[]) { return [...items].sort(() => Math.random() - 0.5); }
+    function registerViolation() {
+        if (violationActive.current || !examStarted || submitted) return;
+        violationActive.current = true;
+        setPenalties((current) => current + 1);
+        setReentrySeconds(30);
+        setReentryRequired(true);
+    }
 
     async function beginExam(nextMode: Mode, paper?: Paper) {
         const questions = nextMode === "paper" ? (paper?.questions ?? []) : nextMode === "section" ? questionsForSection(selectedSection) : shuffled(paperData.flatMap((item) => item.questions));
@@ -93,18 +126,13 @@ export default function Home() {
         setActiveQuestions(nextMode === "shuffle" ? questions.slice(0, 60) : questions);
         setActiveTitle(nextMode === "paper" ? paper?.name ?? "Paper" : nextMode === "section" ? selectedSection : "Shuffle challenge");
         setActivePaperId(nextMode === "paper" ? paper?.id ?? 0 : 0);
-        setAnswers({}); setQuestionIndex(0); setSubmitted(false); setPenalties(0); setSecondsLeft(EXAM_SECONDS); setSaveMessage(""); setTab("practice"); setExamStarted(true);
+        setAnswers({}); setQuestionIndex(0); setSubmitted(false); setPenalties(0); setReentryRequired(false); setReentrySeconds(30); violationActive.current = false; setSecondsLeft(EXAM_SECONDS); setSaveMessage(""); setTab("practice"); setExamStarted(true);
         try { await document.documentElement.requestFullscreen?.(); } catch { setSaveMessage("Fullscreen was blocked by the browser. You can continue, but leaving the exam will count as a penalty."); }
     }
 
     function submitExam() { setSubmitted(true); setExamStarted(false); setTab("results"); if (document.fullscreenElement) document.exitFullscreen?.(); }
-    function exitExamWithPenalty() {
-        setPenalties((current) => current + 1);
-        setSubmitted(true);
-        setExamStarted(false);
-        setTab("results");
-        if (document.fullscreenElement) document.exitFullscreen?.();
-    }
+    function exitExamWithPenalty() { registerViolation(); }
+    async function returnToFullscreen() { try { await document.documentElement.requestFullscreen?.(); } catch { setSaveMessage("Use the browser permission prompt to return to fullscreen."); } }
     function resetToDashboard() { setExamStarted(false); setSubmitted(false); setActiveQuestions([]); setAnswers({}); setTab("papers"); if (document.fullscreenElement) document.exitFullscreen?.(); }
 
     async function handleAuth() {
@@ -127,7 +155,7 @@ export default function Home() {
         await navigator.clipboard.writeText(text); setCopied(true); window.setTimeout(() => setCopied(false), 1800);
     }
 
-    if (examStarted) return <main className={`${styles.shell} ${darkMode ? styles.dark : ""}`}><ExamShell title={activeTitle} questions={activeQuestions} currentQuestion={currentQuestion} questionIndex={questionIndex} answers={answers} penalties={penalties} onAnswer={(answer) => currentQuestion && setAnswers((current) => ({ ...current, [currentQuestion.id]: answer }))} onJump={setQuestionIndex} onSubmit={submitExam} onExit={exitExamWithPenalty} /></main>;
+    if (examStarted) return <main className={`${styles.shell} ${darkMode ? styles.dark : ""}`}><ExamShell title={activeTitle} questions={activeQuestions} currentQuestion={currentQuestion} questionIndex={questionIndex} answers={answers} penalties={penalties} reentryRequired={reentryRequired} reentrySeconds={reentrySeconds} onAnswer={(answer) => currentQuestion && setAnswers((current) => ({ ...current, [currentQuestion.id]: answer }))} onJump={setQuestionIndex} onSubmit={submitExam} onExit={exitExamWithPenalty} onReturnFullscreen={returnToFullscreen} /></main>;
 
     return <main className={`${styles.shell} ${darkMode ? styles.dark : ""}`}>
         <header className={styles.header}><div className={styles.brand}><span className={styles.brandMark}>IS</span><div><p className={styles.kicker}>CANDIDATE CONSOLE / 2026</p><h1>Infosys SE Prep</h1></div></div><div className={styles.headerRight}><button className={styles.themeButton} onClick={() => setDarkMode((value) => !value)}>{darkMode ? "Light mode" : "Dark mode"}</button>{examStarted && <div className={`${styles.timer} ${secondsLeft < 300 ? styles.timerUrgent : ""}`}><span>TIME LEFT</span><strong>{timeLabel}</strong></div>}{userEmail ? <div className={styles.account}><span>{userEmail}</span><button onClick={signOut}>Sign out</button></div> : <div className={styles.auth}><input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} /><input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} /><button onClick={handleAuth}>{authMode === "sign-in" ? "Sign in" : "Create account"}</button><button className={styles.authSwitch} onClick={() => setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in")}>{authMode === "sign-in" ? "Create account" : "Back to sign in"}</button>{authMessage && <small>{authMessage}</small>}</div>}</div></header>
@@ -139,7 +167,7 @@ function PaperDashboard({ papers, attempts, onStart }: { papers: Paper[]; attemp
 
 function PracticeDashboard({ onStart }: { onStart: (mode: Mode, section?: string) => void }) { return <section className={styles.dashboardInner}><div className={styles.dashboardIntro}><div><p className={styles.kicker}>TARGETED PRACTICE / ALL 7 PAPERS</p><h2>Train by problem type</h2><p>Each section card combines every matching question from all seven papers into one timed practice set.</p></div><span className={styles.dashboardCount}>{sectionStats.reduce((total, section) => total + section.count, 0)} questions indexed</span></div><div className={styles.practiceGrid}>{sectionStats.map((section, index) => <article className={styles.practiceCard} key={section.name}><div className={styles.practiceCardTop}><span className={styles.practiceIcon}>{String(index + 1).padStart(2, "0")}</span><span>{section.count} questions</span></div><p className={styles.kicker}>ALL PAPERS COMBINED</p><h3>{section.name.replace(/^SECTION \d+: /, "")}</h3><p>{section.count} matching questions collected from all seven papers. Same timer, navigator, fullscreen rules, and result report.</p><button onClick={() => onStart("section", section.name)}>Start this set →</button></article>)}<article className={`${styles.practiceCard} ${styles.shuffleCard}`}><div className={styles.practiceCardTop}><span className={styles.practiceIcon}>⤨</span><span>60 questions max</span></div><p className={styles.kicker}>RANDOMIZER</p><h3>Shuffle challenge</h3><p>A fresh mixed set sampled from every paper and section with the same timed exam rules.</p><button onClick={() => onStart("shuffle")}>Shuffle and start →</button></article></div></section>; }
 
-function ExamShell({ title, questions, currentQuestion, questionIndex, answers, penalties, onAnswer, onJump, onSubmit, onExit }: { title: string; questions: Question[]; currentQuestion?: Question; questionIndex: number; answers: Record<number, string>; penalties: number; onAnswer: (answer: string) => void; onJump: (index: number) => void; onSubmit: () => void; onExit: () => void }) { const options = currentQuestion ? [["A", currentQuestion.optA], ["B", currentQuestion.optB], ["C", currentQuestion.optC], ["D", currentQuestion.optD]] : []; return <section className={styles.examScreen}><div className={styles.examBar}><div><p className={styles.kicker}>SECURE EXAM MODE</p><strong>{title}</strong></div><div className={styles.examBarActions}><span className={styles.penaltyNotice}>{penalties ? `${penalties} exit penalty` : "Fullscreen active"}</span><button onClick={onExit}>Exit exam</button></div></div><div className={styles.examProgress}><span style={{ width: `${((questionIndex + 1) / questions.length) * 100}%` }} /></div><div className={styles.examBody}><aside className={styles.navigator}><p className={styles.label}>QUESTION MAP</p><div className={styles.numberGrid}>{questions.map((question, index) => <button key={question.id} className={`${index === questionIndex ? styles.numberCurrent : ""} ${answers[question.id] ? styles.numberDone : ""}`} onClick={() => onJump(index)}>{index + 1}</button>)}</div></aside><article className={styles.liveQuestion}><div className={styles.questionEyebrow}><span>QUESTION {String(questionIndex + 1).padStart(2, "0")} / {questions.length}</span><span>{currentQuestion?.section || "General"}</span></div><h2>{currentQuestion?.question}</h2><div className={styles.answerGrid}>{options.map(([letter, text]) => text && <button key={letter} className={`${styles.examOption} ${answers[currentQuestion?.id ?? 0] === letter ? styles.examSelected : ""}`} onClick={() => onAnswer(letter)}><b>{letter}</b><span>{text}</span></button>)}</div><div className={styles.questionActions}><button onClick={() => onJump(Math.max(0, questionIndex - 1))} disabled={questionIndex === 0}>← Previous</button><button className={styles.nextButton} onClick={() => onJump(Math.min(questions.length - 1, questionIndex + 1))}>{questionIndex === questions.length - 1 ? "Review" : "Next →"}</button></div></article></div><footer className={styles.examFooter}><span>{Object.keys(answers).length}/{questions.length} answered · {penalties} penalties</span><button className={styles.primaryButton} onClick={onSubmit}>Submit exam</button></footer></section>; }
+function ExamShell({ title, questions, currentQuestion, questionIndex, answers, penalties, reentryRequired, reentrySeconds, onAnswer, onJump, onSubmit, onExit, onReturnFullscreen }: { title: string; questions: Question[]; currentQuestion?: Question; questionIndex: number; answers: Record<number, string>; penalties: number; reentryRequired: boolean; reentrySeconds: number; onAnswer: (answer: string) => void; onJump: (index: number) => void; onSubmit: () => void; onExit: () => void; onReturnFullscreen: () => void }) { const options = currentQuestion ? [["A", currentQuestion.optA], ["B", currentQuestion.optB], ["C", currentQuestion.optC], ["D", currentQuestion.optD]] : []; return <section className={styles.examScreen}><div className={styles.examBar}><div><p className={styles.kicker}>SECURE EXAM MODE</p><strong>{title}</strong></div><div className={styles.examBarActions}><span className={styles.penaltyNotice}>{penalties ? `${penalties} penalty${penalties === 1 ? "" : "ies"}` : "Fullscreen active"}</span><button onClick={onExit}>Leave fullscreen</button></div></div><div className={styles.examProgress}><span style={{ width: `${((questionIndex + 1) / questions.length) * 100}%` }} /></div><div className={styles.examBody}><aside className={styles.navigator}><p className={styles.label}>QUESTION MAP</p><div className={styles.numberGrid}>{questions.map((question, index) => <button key={question.id} className={`${index === questionIndex ? styles.numberCurrent : ""} ${answers[question.id] ? styles.numberDone : ""}`} onClick={() => onJump(index)}>{index + 1}</button>)}</div></aside><article className={styles.liveQuestion}><div className={styles.questionEyebrow}><span>QUESTION {String(questionIndex + 1).padStart(2, "0")} / {questions.length}</span><span>{currentQuestion?.section || "General"}</span></div><h2>{currentQuestion?.question}</h2><div className={styles.answerGrid}>{options.map(([letter, text]) => text && <button key={letter} className={`${styles.examOption} ${answers[currentQuestion?.id ?? 0] === letter ? styles.examSelected : ""}`} onClick={() => onAnswer(letter)}><b>{letter}</b><span>{text}</span></button>)}</div><div className={styles.questionActions}><button onClick={() => onJump(Math.max(0, questionIndex - 1))} disabled={questionIndex === 0}>← Previous</button><button className={styles.nextButton} onClick={() => onJump(Math.min(questions.length - 1, questionIndex + 1))}>{questionIndex === questions.length - 1 ? "Review" : "Next →"}</button></div></article></div><footer className={styles.examFooter}><span>{Object.keys(answers).length}/{questions.length} answered · {penalties} penalties</span><button className={styles.primaryButton} onClick={onSubmit}>Submit exam</button></footer>{reentryRequired && <div className={styles.violationOverlay}><div className={styles.violationCard}><p className={styles.kicker}>EXAM SECURITY ALERT</p><h2>Return to fullscreen</h2><p>You left fullscreen or changed tabs. This attempt has received one penalty. Return before the timer ends or the exam will submit automatically.</p><strong>{String(reentrySeconds).padStart(2, "0")}s</strong><button className={styles.primaryButton} onClick={onReturnFullscreen}>Return to fullscreen</button></div></div>}</section>; }
 
 function Results({ questions, title, answers, summary, penalties, copied, saveMessage, onCopy, onSave, onBack }: { questions: Question[]; title: string; answers: Record<number, string>; summary: { total: number; answered: number; correct: number; wrong: number; skipped: number; finalScore: number }; penalties: number; copied: boolean; saveMessage: string; onCopy: () => void; onSave: () => void; onBack: () => void }) { return <section className={styles.resultView}><div className={styles.resultHero}><div><p className={styles.kicker}>ASSESSMENT REPORT</p><h2>{summary.finalScore} <span>/ {summary.total}</span></h2><p>{title} · {penalties} fullscreen penalties</p></div><div className={styles.scoreRing}><strong>{Math.round((summary.finalScore / Math.max(1, summary.total)) * 100)}%</strong><span>final score</span></div></div><div className={styles.scoreCards}><div><strong>{summary.correct}</strong><span>Correct</span></div><div><strong>{summary.wrong}</strong><span>Wrong</span></div><div><strong>{summary.skipped}</strong><span>Skipped</span></div><div><strong>{penalties}</strong><span>Penalties</span></div></div><div className={styles.resultActions}><button className={styles.primaryButton} onClick={onSave}>Save attempt</button><button className={styles.secondaryButton} onClick={onCopy}>{copied ? "Copied" : "Copy whole result"}</button><button className={styles.secondaryButton} onClick={onBack}>Back to dashboard</button></div>{saveMessage && <p className={styles.saveMessage}>{saveMessage}</p>}<div className={styles.reviewList}>{questions.map((question) => <article className={styles.reviewCard} key={question.id}><div className={styles.questionEyebrow}><span>Q{question.qNumber} · {!answers[question.id] ? "skipped" : answers[question.id] === question.correctAns ? "correct" : "wrong"}</span><span>Your answer: {answers[question.id] || "-"} · Key: {question.correctAns || "-"}</span></div><h3>{question.question}</h3><p>{question.explanation || "Explanation not available."}</p><small><b>Short trick:</b> {question.trick || "Not available."}</small></article>)}</div></section>; }
 

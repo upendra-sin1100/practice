@@ -294,8 +294,52 @@
 }
 
 .examScreen {
+    position: relative;
     min-height: 100vh;
     background: var(--panel);
+}
+
+.violationOverlay {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #061323e8;
+    padding: 24px;
+}
+
+.violationCard {
+    width: min(480px, 100%);
+    border: 1px solid #5eb0e9;
+    background: var(--panel);
+    padding: 34px;
+    color: var(--text);
+    text-align: center;
+    box-shadow: 0 20px 70px #0008;
+}
+
+.violationCard h2 {
+    margin: 8px 0 12px;
+    font: 700 30px/1 Georgia, serif;
+}
+
+.violationCard p:not(.kicker) {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.violationCard strong {
+    display: block;
+    margin: 22px 0;
+    color: #c65b62;
+    font: 700 48px var(--font-geist-mono), monospace;
+}
+
+.violationCard .primaryButton {
+    width: 100%;
+    padding: 14px;
+    cursor: pointer;
 }
 
 .examBar {
