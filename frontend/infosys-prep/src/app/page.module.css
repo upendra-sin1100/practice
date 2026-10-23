@@ -340,6 +340,13 @@
     font: 700 48px var(--font-geist-mono), monospace;
 }
 
+.fullscreenError {
+    border: 1px solid #bd6870;
+    padding: 10px 12px;
+    color: #bd6870 !important;
+    font-size: 12px;
+}
+
 .violationCard .primaryButton {
     width: 100%;
     padding: 14px;
