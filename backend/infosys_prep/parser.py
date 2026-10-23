@@ -50,6 +50,10 @@ def _parse_answer_key(lines: list[str]) -> dict[int, dict]:
         if not line:
             continue
 
+        if _SEC_HDR.match(line):
+            pending_num = None
+            continue
+
         # Try  "1. (c) explanation …"
         m = _EXPL_LINE.match(line)
         if m:
@@ -155,6 +159,10 @@ def _build_questions(raw_lines: list[str], answers: dict) -> list[dict]:
         if not line:
             continue
         if _SEC_HDR.match(line):
+            # A section heading can follow the final option without a new
+            # question marker. End the previous question before reading the
+            # section's passage or questions.
+            flush()
             section = line
             continue
 

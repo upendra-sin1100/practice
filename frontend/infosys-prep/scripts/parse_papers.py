@@ -9,6 +9,8 @@ and writes src/data/papers.json for the Next.js app.
 import sys, re, json
 from pathlib import Path
 
+sys.stdout.reconfigure(encoding="utf-8")
+
 # ──────────────────────────────────────────────
 # Install deps if missing
 # ──────────────────────────────────────────────
@@ -70,6 +72,11 @@ def parse_answer_key(lines: list[str]) -> dict:
         line = clean(raw)
         if not line:
             continue
+
+        if _SEC_HDR.match(line):
+            pending = None
+            continue
+
         m = _EXPL_LINE.match(line)
         if m:
             n, ans, expl = int(m.group(1)), m.group(2).upper(), m.group(3).strip()
@@ -213,6 +220,10 @@ def build_questions(raw_lines: list[str], answers: dict, paper_id: int) -> list[
         if not line:
             continue
         if _SEC_HDR.match(line):
+            # A section heading can follow the final option without a new
+            # question marker. End the previous question before reading the
+            # section's passage or questions.
+            flush()
             section = line
             continue
         m = _Q_START.match(line)

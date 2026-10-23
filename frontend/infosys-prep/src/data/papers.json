@@ -350,7 +350,7 @@
         "optA": "₹4,000",
         "optB": "₹5,000",
         "optC": "₹6,000",
-        "optD": "₹7,000 Read the passage and answer Q26-30. In software organisations, \"technical debt\" is often treated as a purely engineering concern, a messy residue of hurried decisions that developers will eventually tidy up. This framing is misleading. Debt, in the financial sense, is not inherently harmful; a company that borrows to seize a market opportunity may be acting shrewdly. The problem arises when the interest, meaning the extra effort every future change demands, is never acknowledged on the balance sheet. Teams then find that features which once took days now take weeks, yet managers, seeing only the delivered functionality, attribute the slowdown to declining developer productivity. Proponents of disciplined refactoring argue that a fixed share of every sprint should be reserved for repayment. Critics counter that such quotas are arbitrary and encourage cosmetic rewrites that leave real risks untouched. A more defensible approach, some suggest, is to make debt visible by tracking how often particular modules cause delays or defects, and to repay only where the interest is demonstrably high.",
+        "optD": "₹7,000",
         "correctAns": "",
         "explanation": "",
         "trick": "SI = P×R×T/100. CI-SI difference for 2 yrs = P(R/100)². For 3 yrs use formula directly."
@@ -1018,7 +1018,7 @@
         "optC": "NT",
         "optD": "PU",
         "correctAns": "B",
-        "explanation": "First letters C, F, I, L rise by 3 each time → next is O. Second letters E, I, M, Q rise by 4 each time → next is U. Answer: OU. Page 8 of 10 Infosys System Engineer | Hard-Level Mock Test Section 2: Quant",
+        "explanation": "First letters C, F, I, L rise by 3 each time → next is O. Second letters E, I, M, Q rise by 4 each time → next is U. Answer: OU. Page 8 of 10 Infosys System Engineer | Hard-Level Mock Test",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -1156,9 +1156,9 @@
         "optA": "9.5%",
         "optB": "10.5%",
         "optC": "11.5%",
-        "optD": "12.5% Read the passage and answer Q26-30. Automation in enterprise software is frequently sold on the promise of eliminating human error, yet the more interesting effect is often a redistribution of error rather than its removal. When a system automates data entry, the mistakes that once occurred at the point of typing largely disappear, but new failure modes emerge upstream, in the design of the rules the automation follows, and downstream, in the operators' declining vigilance once they trust the system implicitly. A well-documented pattern in aviation and, increasingly, in IT operations is that highly reliable automation breeds complacency: engineers stop cross-checking outputs precisely because the system rarely errs, so on the rare occasion it does, the mistake propagates further before anyone notices. This does not argue against automation; it argues for designing monitoring and escalation processes that assume the automation will occasionally fail silently, rather than processes that assume a human will always catch what the machine misses.",
+        "optD": "12.5%",
         "correctAns": "B",
-        "explanation": "SI on ₹18,000 at 10% for 2 years = ₹3,600. Setting CI on ₹16,000 equal: 16,000x((1+r)^2 - 1) = 3,600 gives (1+r)^2 = 1.225, so r ≈ 10.5%. Section 3: Verbal",
+        "explanation": "SI on ₹18,000 at 10% for 2 years = ₹3,600. Setting CI on ₹16,000 equal: 16,000x((1+r)^2 - 1) = 3,600 gives (1+r)^2 = 1.225, so r ≈ 10.5%.",
         "trick": "SI = P×R×T/100. CI-SI difference for 2 yrs = P(R/100)². For 3 yrs use formula directly."
       },
       {
@@ -1312,7 +1312,7 @@
         "optC": "expensive",
         "optD": "delayed",
         "correctAns": "B",
-        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (b) 45. (c) Section 4: Pseudo Code",
+        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (b) 45. (c)",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -1466,7 +1466,7 @@
         "optC": "[5, 2, 1, 4, 3]",
         "optD": "[5, 1, 2, 4, 2]",
         "correctAns": "A",
-        "explanation": "temp=1. arr[0]=arr[4]=5 → [5,2,3,4,5]. arr[4]=arr[2]=3 → [5,2,3,4,3]. arr[2]=arr[1]=2 → [5,2,2,4,3]. arr[1]=temp=1 → final [5,1,2,4,3]. Page 9 of 10 Infosys System Engineer | Hard-Level Mock Test Section 5: Numeric Puzzles",
+        "explanation": "temp=1. arr[0]=arr[4]=5 → [5,2,3,4,5]. arr[4]=arr[2]=3 → [5,2,3,4,3]. arr[2]=arr[1]=2 → [5,2,2,4,3]. arr[1]=temp=1 → final [5,1,2,4,3]. Page 9 of 10 Infosys System Engineer | Hard-Level Mock Test",
         "trick": "Draw Venn diagrams: All A are B = A inside B circle. Some = overlap. No = no overlap."
       },
       {
@@ -1522,7 +1522,7 @@
         "optC": "60",
         "optD": "49",
         "correctAns": "B",
-        "explanation": "56. These are tetrahedral numbers, C(n+2,3): 1, 4, 10, 20, 35, and next is C(8,3) = 56. Section 6: Grammar",
+        "explanation": "56. These are tetrahedral numbers, C(n+2,3): 1, 4, 10, 20, 35, and next is C(8,3) = 56.",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -1592,7 +1592,7 @@
         "optC": "an, a, a, a",
         "optD": "a, an, a, the Page 6 of 10 Infosys System Engineer | Hard-Level Mock Test",
         "correctAns": "A",
-        "explanation": "an umbrella (vowel sound), a one-way ticket (\"w\" sound), a useful travel guide (\"y\" sound), the trip (specific, already referenced). Section 7: Writing Use the rubric above. Model structure: Subject line (\"Scheduled Maintenance Window for Server Configuration Fix\"), greeting, a brief statement of the issue (outdated configuration causing recurring performance degradation), the proposed maintenance window and expected 30-minute downtime, the mitigation/communication plan, a request for approval, and a courteous sign-off with name and designation. Scoring guide Award +1 per MCQ (Q1-59) and up to 10 for Q60. Aim to clear each section's cut-off separately, not just the total. Page 10 of 10",
+        "explanation": "an umbrella (vowel sound), a one-way ticket (\"w\" sound), a useful travel guide (\"y\" sound), the trip (specific, already referenced).",
         "trick": "Say the sentence aloud. Your ear catches subject-verb mismatches and tense errors quickly."
       },
       {
@@ -1824,7 +1824,7 @@
         "optC": "T",
         "optD": "W",
         "correctAns": "A",
-        "explanation": "Differences between consecutive letters (by position) increase by 1 each time: +2,+3,+4,+5, next +6: P(16)+6 = 22 = V. Page 9 of 11 Section 2: Quant",
+        "explanation": "Differences between consecutive letters (by position) increase by 1 each time: +2,+3,+4,+5, next +6: P(16)+6 = 22 = V. Page 9 of 11",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -1962,9 +1962,9 @@
         "optA": "2 years",
         "optB": "3 years",
         "optC": "4 years",
-        "optD": "3.5 years Read the passage and answer Q26-30. Sokware effort estimation has resisted four decades of methodological refinement, and the reason is not, as oken supposed, a lack of adequate techniques. Function point analysis, story point velocity tracking and Monte Carlo simulation are all, in controlled retrospective studies, reasonably well calibrated. The persistent gap between estimated and actual delivery dates arises instead from a structural asymmetry: the costs of underestimating are diffuse and delayed, distributed across a project's eventual overrun, whereas the costs of overestimating are immediate and attributable, since a padded estimate can lose a bid or provoke management scrutiny before the work even begins. Estimators therefore face an incentive gradient that has nothing to do with statistical accuracy and everything to do with organisational consequence, and this gradient reliably pushes estimates toward optimism regardless of how sophisticated the underlying model is. Attempts to correct this by adding explicit contingency buffers frequently fail for a related reason: once a buffer becomes visible in a schedule, it is treated by stakeholders as slack to be reclaimed rather than risk to be reserved, a phenomenon sometimes called the student syndrome, in reference to the tendency to begin a task only as its deadline approaches.",
+        "optD": "3.5 years",
         "correctAns": "B",
-        "explanation": "9,261/8,000 = 1.157625 = 1.05³ (since 1.05^2=1.1025, x1.05=1.157625). So the time is 3 years. Section 3: Verbal",
+        "explanation": "9,261/8,000 = 1.157625 = 1.05³ (since 1.05^2=1.1025, x1.05=1.157625). So the time is 3 years.",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -2118,7 +2118,7 @@
         "optC": "courageous",
         "optD": "uncertain",
         "correctAns": "B",
-        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (c) 45. (b) Section 4: Pseudo Code",
+        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (c) 45. (b)",
         "trick": "Let current age = x. 'n years ago' → (x-n), 'n years hence' → (x+n). Set up equation."
       },
       {
@@ -2272,7 +2272,7 @@
         "optC": "[10, 40, 30, 20, 50, 60]",
         "optD": "[60, 40, 50, 20, 30, 10] Page 6 of 11",
         "correctAns": "A",
-        "explanation": "i=0,j=5: swap arr[0],arr[5] → [60,20,30,40,50,10]; i=1,j=3. i<j (1<3): swap arr[1],arr[3] → [60,40,30,20,50,10]; i=2,j=1. Now i<j fails (2<1), loop ends. Final: [60,40,30,20,50,10]. Page 10 of 11 Section 5: Numeric Puzzles",
+        "explanation": "i=0,j=5: swap arr[0],arr[5] → [60,20,30,40,50,10]; i=1,j=3. i<j (1<3): swap arr[1],arr[3] → [60,40,30,20,50,10]; i=2,j=1. Now i<j fails (2<1), loop ends. Final: [60,40,30,20,50,10]. Page 10 of 11",
         "trick": "Draw Venn diagrams: All A are B = A inside B circle. Some = overlap. No = no overlap."
       },
       {
@@ -2328,7 +2328,7 @@
         "optC": "336",
         "optD": "342",
         "correctAns": "C",
-        "explanation": "336. Each term is the product of 3 consecutive integers: 1x2x3, 2x3x4, 3x4x5, 4x5x6, 5x6x7; next is 6x7x8 = 336. Section 6: Grammar",
+        "explanation": "336. Each term is the product of 3 consecutive integers: 1x2x3, 2x3x4, 3x4x5, 4x5x6, 5x6x7; next is 6x7x8 = 336.",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -2398,7 +2398,7 @@
         "optC": "-, the, -, the",
         "optD": "An, a, the, an",
         "correctAns": "C",
-        "explanation": "\"Honesty\" (abstract, general sense) takes no article; \"the best policy\" (superlative) takes \"the\"; \"history\" (general sense) takes no article; \"the dishonest\" (adjective used to denote a class of people) takes \"the\". Section 7: Writing Use the rubric above. A strong answer defines both scaling approaches, weighs cost, downtime, and elasticity trade-offs, and recommends horizontal scaling (with justification: unpredictable/spiky e-commerce traffic is better handled by elastically adding/removing servers than by repeatedly resizing a single machine, which has a hardware ceiling and often requires downtime). Scoring guide Award +1 per MCQ (Q1-59) and up to 10 for Q60. Aim to clear each section's cut-off separately, not just the total. This paper is intentionally harder than Papers 1 and 2 - a lower raw score here is normal; focus on understanding the multi-step reasoning in the explanations. Page 11 of 11",
+        "explanation": "\"Honesty\" (abstract, general sense) takes no article; \"the best policy\" (superlative) takes \"the\"; \"history\" (general sense) takes no article; \"the dishonest\" (adjective used to denote a class of people) takes \"the\".",
         "trick": "Say the sentence aloud. Your ear catches subject-verb mismatches and tense errors quickly."
       },
       {
@@ -2630,7 +2630,7 @@
         "optC": "F",
         "optD": "I",
         "correctAns": "A",
-        "explanation": "Gaps between letters increase by 1 each time: -3, -4, -5, next -6. M(13)-6 = 7 = G. Page 9 of 11 Infosys System Engineer |Mock Test Section 2: Quant",
+        "explanation": "Gaps between letters increase by 1 each time: -3, -4, -5, next -6. M(13)-6 = 7 = G. Page 9 of 11 Infosys System Engineer |Mock Test",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -2768,9 +2768,9 @@
         "optA": "10%",
         "optB": "12%",
         "optC": "8%",
-        "optD": "15% Read the passage and answer Q26-30. Distributed systems theory offers a deceptively simple trilemma: a system cannot simultaneously guarantee consistency, availability and partition tolerance, and must therefore sacrifice one when a network partition occurs. In practice, however, the theorem is more often invoked than correctly applied, because partition tolerance is not actually optional for any system whose nodes communicate over an unreliable network, which is to say nearly all distributed systems built today. The real choice, once partition tolerance is accepted as a structural necessity rather than a design preference, is between consistency and availability during the partition itself, and this choice need not be uniform across an entire system. A payment ledger might reasonably refuse writes during a partition to preserve consistency, accepting temporary unavailability as the lesser cost, while a product catalogue serving read traffic might instead continue answering requests with potentially stale data, judging availability the more valuable property for that workload. Treating the CAP theorem as prescribing a single, system-wide Page 3 of 11 Infosys System Engineer |Mock Test choice, rather than a per-operation or per-service one, is therefore a common and consequential misreading.",
+        "optD": "15%",
         "correctAns": "A",
-        "explanation": "3rd-year interest = 1655-1050 = ₹605 - but more directly: CI₂-SI₂ = Pr^2 = 1050-1000 = 50, and SI₂ = 2Pr = 1000 so Pr=500. Dividing, r = 50/500 = 0.10 = 10% (and P=₹5,000, verified: 5000x1.1³=6,655, CI₃=1,655 ✓). Section 3: Verbal",
+        "explanation": "3rd-year interest = 1655-1050 = ₹605 - but more directly: CI₂-SI₂ = Pr^2 = 1050-1000 = 50, and SI₂ = 2Pr = 1000 so Pr=500. Dividing, r = 50/500 = 0.10 = 10% (and P=₹5,000, verified: 5000x1.1³=6,655, CI₃=1,655 ✓).",
         "trick": "SI = P×R×T/100. CI-SI difference for 2 yrs = P(R/100)². For 3 yrs use formula directly."
       },
       {
@@ -2924,7 +2924,7 @@
         "optC": "tentative",
         "optD": "biased",
         "correctAns": "B",
-        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (c) 45. (c) Page 10 of 11 Infosys System Engineer |Mock Test Section 4: Pseudo Code",
+        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (c) 45. (c) Page 10 of 11 Infosys System Engineer |Mock Test",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -3078,7 +3078,7 @@
         "optC": "[3, 4, 5, 2, 0, 0, 2]",
         "optD": "[0, 0, 0, 3, 4, 5, 2]",
         "correctAns": "A",
-        "explanation": "Non-zero elements (3,4,5,2) are copied to the front in order, giving positions 0-3; the while loop then zeroes out positions 4,5,6. Final: [3,4,5,2,0,0,0]. Section 5: Numeric Puzzles",
+        "explanation": "Non-zero elements (3,4,5,2) are copied to the front in order, giving positions 0-3; the while loop then zeroes out positions 4,5,6. Final: [3,4,5,2,0,0,0].",
         "trick": "Trace line-by-line with real values. Don't guess — write variable values at each step."
       },
       {
@@ -3134,7 +3134,7 @@
         "optC": "96",
         "optD": "90",
         "correctAns": "A",
-        "explanation": "91. Each term is the sum of squares 1^2+2^2+...+n^2: 1, 1+4=5, +9=14, +16=30, +25=55, next +36 = 91. Section 6: Grammar",
+        "explanation": "91. Each term is the sum of squares 1^2+2^2+...+n^2: 1, 1+4=5, +9=14, +16=30, +25=55, next +36 = 91.",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -3204,7 +3204,7 @@
         "optC": "-, the, the, the",
         "optD": "An, the, -, an",
         "correctAns": "A",
-        "explanation": "\"Information technology\" (general/abstract) takes no article; \"the way we work\" takes \"the\" (specific, fixed phrase); \"access\" (general) takes no article; \"the internet\" conventionally takes \"the\". Section 7: Writing Use the rubric above. A strong answer explains that microservices offer better independent scalability but introduce operational complexity (service discovery, distributed tracing, orchestration) that a small team with limited DevOps experience may struggle to run reliably, while internal modularisation keeps deployment simple but still improves maintainability. Given the stated constraints (8 engineers, limited DevOps experience), the well-justified recommendation is usually to modularise internally first and revisit microservices once the team's operational maturity grows. Scoring guide Award +1 per MCQ (Q1-59) and up to 10 for Q60. This paper is intentionally harder than Papers 1-3; a lower raw score is expected - focus on the reasoning in the explanations, especially the computationally-verified matchstick answer (Q51) and the multi-pass algorithm traces (Q48, Q49). Page 11 of 11",
+        "explanation": "\"Information technology\" (general/abstract) takes no article; \"the way we work\" takes \"the\" (specific, fixed phrase); \"access\" (general) takes no article; \"the internet\" conventionally takes \"the\".",
         "trick": "Say the sentence aloud. Your ear catches subject-verb mismatches and tense errors quickly."
       },
       {
@@ -3436,7 +3436,7 @@
         "optC": "I",
         "optD": "F",
         "correctAns": "A",
-        "explanation": "Gaps increase by 1 each time: +4,+5,+6,+7; next gap +8. Z(26)+8=34, which wraps around (34-26=8) to H. Section 2: Quant",
+        "explanation": "Gaps increase by 1 each time: +4,+5,+6,+7; next gap +8. Z(26)+8=34, which wraps around (34-26=8) to H.",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -3574,9 +3574,9 @@
         "optA": "₹12,100",
         "optB": "₹12,000",
         "optC": "₹11,500",
-        "optD": "₹13,200 Read the passage and answer Q26-30. Rate limiting is often presented as a purely defensive mechanism, a way to shield backend services from abusive or accidental traffic spikes, but this framing understates its role as a tool for communicating capacity contracts between services. A token-bucket limiter that rejects requests once a quota is exhausted is, in effect, declaring an explicit promise about how much load a downstream service can absorb, and client-side code written against that promise can make informed decisions about retry timing, backoff, and degraded functionality rather than failing unpredictably. The trouble arises when limits are set reactively, in response to an incident, rather than derived from actual capacity testing; a limit chosen under pressure to stop an ongoing outage often reflects the conditions of that specific incident rather than the service's true sustainable throughput, and may be far too conservative once normal operation resumes, quietly capping legitimate growth long after the original emergency has been forgotten. Treating rate limits as living documentation of measured capacity, revisited whenever the underlying service's performance characteristics change, avoids both failure modes: the limiter protects the service without becoming an invisible ceiling on its own success.",
+        "optD": "₹13,200",
         "correctAns": "A",
-        "explanation": "End of year 1: 20000x1.10=22,000; after repaying 11,000, remaining debt = 11,000. End of year 2: 11000x1.10 = ₹12,100. Section 3: Verbal",
+        "explanation": "End of year 1: 20000x1.10=22,000; after repaying 11,000, remaining debt = 11,000. End of year 2: 11000x1.10 = ₹12,100.",
         "trick": "SI = P×R×T/100. CI-SI difference for 2 yrs = P(R/100)². For 3 yrs use formula directly."
       },
       {
@@ -3730,7 +3730,7 @@
         "optC": "insightful",
         "optD": "aggressive",
         "correctAns": "B",
-        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (c) 45. (c) Section 4: Pseudo Code",
+        "explanation": "40. (b) 41. (b) 42. (b) 43. (b) 44. (c) 45. (c)",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -3884,7 +3884,7 @@
         "optC": "9",
         "optD": "15",
         "correctAns": "A",
-        "explanation": "12. Kadane's algorithm finds the maximum subarray sum. Tracing: maxEndingHere/maxSoFar progress to 3, 2→3, 7, 4→7, 8, 6→8, 12→12 (the subarray [5,-3,4,-2,6] sums to 10, but [3,-1,5,-3,4,-2,6] or similarly the running trace peaks at 12 via maxEndingHere reaching 12 at the last element - confirmed by direct code execution). Section 5: Numeric Puzzles",
+        "explanation": "12. Kadane's algorithm finds the maximum subarray sum. Tracing: maxEndingHere/maxSoFar progress to 3, 2→3, 7, 4→7, 8, 6→8, 12→12 (the subarray [5,-3,4,-2,6] sums to 10, but [3,-1,5,-3,4,-2,6] or similarly the running trace peaks at 12 via maxEndingHere reaching 12 at the last element - confirmed by direct code execution).",
         "trick": "Trace line-by-line with real values. Don't guess — write variable values at each step."
       },
       {
@@ -3940,7 +3940,7 @@
         "optC": "77",
         "optD": "71",
         "correctAns": "A",
-        "explanation": "73. Each term equals 2n^2+1 for n=1,2,3,...: 3,9,19,33,51; next (n=6): 2(36)+1 = 73. Section 6: Grammar",
+        "explanation": "73. Each term equals 2n^2+1 for n=1,2,3,...: 3,9,19,33,51; next (n=6): 2(36)+1 = 73.",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -4010,7 +4010,7 @@
         "optC": "The, -, the, the",
         "optD": "The, the, -, the",
         "correctAns": "C",
-        "explanation": "\"The United Nations\" needs \"the\"; \"World War II\" conventionally takes no article; \"the UN Security Council\" needs \"the\"; \"the five permanent members\" needs \"the\" (a specific, known group). Section 7: Writing Use the rubric above. A strong answer explains that write-through caching keeps the cache and database synchronised (higher consistency, lower risk of data loss, but higher write latency), while write-back caching is faster for writes but risks data loss or staleness if the cache fails before the asynchronous write completes. It should recommend write-through for the financial transactions API (consistency and durability are critical) and write-back for the \"like\" counter (eventual consistency is acceptable, and raw write throughput matters more). Scoring guide Award +1 per MCQ (Q1-59) and up to 10 for Q60. This paper is intentionally the hardest in the series - the matchstick puzzle (Q51) and several pseudo-code traces (Q46, Q50) were independently verified by running the logic in code, not just worked by hand, so trust the explanations even where the reasoning looks dense.",
+        "explanation": "\"The United Nations\" needs \"the\"; \"World War II\" conventionally takes no article; \"the UN Security Council\" needs \"the\"; \"the five permanent members\" needs \"the\" (a specific, known group).",
         "trick": "Say the sentence aloud. Your ear catches subject-verb mismatches and tense errors quickly."
       },
       {
@@ -4242,7 +4242,7 @@
         "optC": "Both statements together are sufficient, but neither alone is",
         "optD": "Even both statements together are not sufficient",
         "correctAns": "C",
-        "explanation": "I alone gives only P's parent; II alone links R and Q's father without involving P. Together: P is the daughter of R, and R is the sibling of Q's father, so P and Q are cousins. Section 2: Quant",
+        "explanation": "I alone gives only P's parent; II alone links R and Q's father without involving P. Together: P is the daughter of R, and R is the sibling of Q's father, so P and Q are cousins.",
         "trick": "Try with different numbers (e.g. positive + negative). If different answers → insufficient."
       },
       {
@@ -4380,9 +4380,9 @@
         "optA": "5:2",
         "optB": "2:5",
         "optC": "3:2",
-        "optD": "1:3 Read the passage and answer Q26-30. When a measure becomes a target, it ceases to be a good measure - a maxim known as Goodhart's law that engineering organisations rediscover with remarkable regularity. A team told that its performance will be judged by the number of closed tickets quickly learns to split large tasks into many trivial ones; a group rewarded for code coverage writes tests that execute lines without asserting anything meaningful. In neither case is the behaviour necessarily cynical. People respond rationally to the incentives they perceive, and the metric, once elevated to a goal, simply redirects that rationality away from the outcome it was intended to track. The remedy is not to abandon measurement, which would leave managers navigating by anecdote, but to treat any single metric as a symptom rather than a verdict, to pair it with a counter-metric that penalises its obvious abuse, and to revisit the pairing as teams learn how to game it. Even then, the arrangement is only ever provisionally sound, since every safeguard becomes, in time, another target.",
+        "optD": "1:3",
         "correctAns": "A",
-        "explanation": "Milk fractions: 3/5, 5/6, target 2/3. By alligation, the amounts are in the ratio (5/6-2/3) : (2/3-3/5) = 1/6 : 1/15 = 5:2. Section 3: Verbal",
+        "explanation": "Milk fractions: 3/5, 5/6, target 2/3. By alligation, the amounts are in the ratio (5/6-2/3) : (2/3-3/5) = 1/6 : 1/15 = 5:2.",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -4536,7 +4536,7 @@
         "optC": "outdated",
         "optD": "technical",
         "correctAns": "B",
-        "explanation": "40. (b) 41. (a) 42. (a) 43. (b) 44. (b) 45. (c) Section 4: Pseudo Code",
+        "explanation": "40. (b) 41. (a) 42. (a) 43. (b) 44. (b) 45. (c)",
         "trick": "The answer is always in the passage text. Avoid options with extreme words (always/never)."
       },
       {
@@ -4690,7 +4690,7 @@
         "optC": "4",
         "optD": "6",
         "correctAns": "A",
-        "explanation": "2. dp = [0, 1, 2, 1, 1, 2, 2], so dp[6] = 2 (3+3). A greedy approach (4+1+1) would give 3, which is why the DP matters. Section 5: Numeric Puzzles",
+        "explanation": "2. dp = [0, 1, 2, 1, 1, 2, 2], so dp[6] = 2 (3+3). A greedy approach (4+1+1) would give 3, which is why the DP matters.",
         "trick": "Trace line-by-line with real values. Don't guess — write variable values at each step."
       },
       {
@@ -4746,7 +4746,7 @@
         "optC": "210",
         "optD": "228",
         "correctAns": "A",
-        "explanation": "222. Each term is n³+n: 2, 10, 30, 68, 130; for n=6: 216+6 = 222. Section 6: Grammar",
+        "explanation": "222. Each term is n³+n: 2, 10, 30, 68, 130; for n=6: 216+6 = 222.",
         "trick": "Check: differences, then differences-of-differences, then ratios, then n² / n³ patterns."
       },
       {
@@ -4816,7 +4816,7 @@
         "optC": "The, an, -, a",
         "optD": "The, a, the, a",
         "correctAns": "A",
-        "explanation": "The European Union (proper institution), a unique (starts with /j/ sound), artificial intelligence (general concept, no article), an honest (silent h). Section 7: Writing Use the rubric above. A strong email has a calm, factual subject line (e.g., \"Security Finding in Production Application - Action Needed\"), states the vulnerability and potential impact neutrally (no blame), describes the immediate mitigation already applied (for example, restricting access or applying a temporary rule), proposes the permanent fix with a rough timeline, and closes by asking for an urgent meeting at specific times. Scoring guide Award +1 per MCQ (Q1-59) and up to 10 for Q60. This is the hardest paper in the series. The matchstick answer (Q51), the dice, loan and probability answers, and the pseudo-code traces (Q46-50) were verified by running the logic in code, so trust the key even where the working looks dense.",
+        "explanation": "The European Union (proper institution), a unique (starts with /j/ sound), artificial intelligence (general concept, no article), an honest (silent h).",
         "trick": "Say the sentence aloud. Your ear catches subject-verb mismatches and tense errors quickly."
       },
       {
@@ -5048,7 +5048,7 @@
         "optC": "8",
         "optD": "9",
         "correctAns": "A",
-        "explanation": "B is 18th from the right, so B is 40-18+1 = 23rd from the left. Students between A (15th) and B (23rd) = 23-15-1 = 7. Section 2: Quant",
+        "explanation": "B is 18th from the right, so B is 40-18+1 = 23rd from the left. Students between A (15th) and B (23rd) = 23-15-1 = 7.",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -5186,9 +5186,9 @@
         "optA": "7",
         "optB": "6",
         "optC": "8",
-        "optD": "5 Read the passage and answer Q26-30. In distributed systems, a network call that times out leaves the caller in genuine ignorance: the request may have been lost before reaching the server, executed successfully with the reply lost on the way back, or still be in flight. Retrying is the natural response, but retrying a non-idempotent operation - charging a card, say - risks performing it twice. The standard remedy is to make the operation idempotent by attaching a unique request identifier, so that the server can recognise a duplicate and return the original result instead of re-executing. This shifts the burden rather than removing it: the server must now durably remember identifiers, and must decide how long to remember them, since storing them forever is costly while discarding them too early reopens the window for duplicates. Engineers who treat idempotency as a mere implementation detail therefore tend to discover it as an incident, whereas those who treat it as part of an operation's contract design it in from the start.",
+        "optD": "5",
         "correctAns": "A",
-        "explanation": "LCM(12, 15, 20) = 60 minutes. In 6 hours (360 minutes) the bells ring together at 0, 60, 120, 180, 240, 300 and 360 minutes: 7 times. Section 3: Verbal",
+        "explanation": "LCM(12, 15, 20) = 60 minutes. In 6 hours (360 minutes) the bells ring together at 0, 60, 120, 180, 240, 300 and 360 minutes: 7 times.",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -5384,7 +5384,7 @@
         "optC": "lengthy",
         "optD": "outdated",
         "correctAns": "B",
-        "explanation": "43. (c) 44. (c) 45. (c) Section 4: Pseudo Code",
+        "explanation": "43. (c) 44. (c) 45. (c)",
         "trick": "Eliminate obviously wrong options first. Then verify the remaining one against the question."
       },
       {
@@ -5496,7 +5496,7 @@
         "optC": "8",
         "optD": "9",
         "correctAns": "A",
-        "explanation": "7. The best choice for capacity 5 is items of weight 2 and 3, worth 3 + 4 = 7. The loop runs w downwards, so each item is used at most once. Section 5: Numeric Puzzles",
+        "explanation": "7. The best choice for capacity 5 is items of weight 2 and 3, worth 3 + 4 = 7. The loop runs w downwards, so each item is used at most once.",
         "trick": "Trace line-by-line with real values. Don't guess — write variable values at each step."
       },
       {
@@ -5552,7 +5552,7 @@
         "optC": "43",
         "optD": "47",
         "correctAns": "A",
-        "explanation": "41. Rule: third number = (first x second) - (first + second). Row 1: 12 - 7 = 5 ✓. Row 2: 30 - 11 = 19 ✓. Row 3: 56 - 15 = 41. Section 6: Grammar",
+        "explanation": "41. Rule: third number = (first x second) - (first + second). Row 1: 12 - 7 = 5 ✓. Row 2: 30 - 11 = 19 ✓. Row 3: 56 - 15 = 41.",
         "trick": "Find the rule from given examples before solving. Test your rule on a known entry first."
       },
       {
@@ -5622,7 +5622,7 @@
         "optC": "an, an, -, an",
         "optD": "a, a, the, an",
         "correctAns": "A",
-        "explanation": "an MBA (the sound /em/), a university (the sound /ju/), the UK (a specific country name), an HR manager (the sound /eɪtʃ/). Section 7: Writing Use the rubric above. A strong answer explains that round robin sends requests to servers in a fixed rotation regardless of their current load, while least connections sends each new request to the server with the fewest active connections. For requests of widely varying duration, least connections is the better choice, because round robin can pile long requests onto one server while others sit idle. Scoring guide Award +1 per MCQ (Q1-59) and up to 10 for Q60. This is the hardest paper in the series. The seating arrangement, probability, matchstick, cryptarithm and all pseudo-code answers were verified by running the logic in code.",
+        "explanation": "an MBA (the sound /em/), a university (the sound /ju/), the UK (a specific country name), an HR manager (the sound /eɪtʃ/).",
         "trick": "Let current age = x. 'n years ago' → (x-n), 'n years hence' → (x+n). Set up equation."
       },
       {
