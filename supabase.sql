@@ -8,11 +8,15 @@ create table if not exists public.attempts (
   correct_count integer not null default 0,
   wrong_count integer not null default 0,
   skipped_count integer not null default 0,
+  penalty_count integer not null default 0,
   answers jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 
 alter table public.attempts enable row level security;
+
+drop policy if exists "Users can view their own attempts" on public.attempts;
+drop policy if exists "Users can save their own attempts" on public.attempts;
 
 create policy "Users can view their own attempts"
   on public.attempts for select
@@ -21,3 +25,5 @@ create policy "Users can view their own attempts"
 create policy "Users can save their own attempts"
   on public.attempts for insert
   with check (auth.uid() = user_id);
+
+alter table public.attempts add column if not exists penalty_count integer not null default 0;

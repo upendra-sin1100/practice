@@ -8,17 +8,28 @@ import { supabase } from "../lib/supabase";
 
 const paperData = papers as Paper[];
 const EXAM_SECONDS = 60 * 60;
-type Tab = "exam" | "results" | "history";
-type SavedAttempt = { id: string; paper_id: number; paper_name: string; score: number; total_questions: number; correct_count: number; wrong_count: number; skipped_count: number; created_at: string; };
+type Tab = "papers" | "practice" | "history" | "results";
+type Mode = "paper" | "section" | "shuffle";
+type SavedAttempt = { id: string; paper_id: number; paper_name: string; score: number; total_questions: number; correct_count: number; wrong_count: number; skipped_count: number; penalty_count?: number; created_at: string; };
+
+const sectionNames = [...new Set(paperData.flatMap((paper) => paper.questions.map((question) => question.section)).filter(Boolean))];
 
 export default function Home() {
+    const [tab, setTab] = useState<Tab>("papers");
+    const [mode, setMode] = useState<Mode>("paper");
     const [selectedPaperId, setSelectedPaperId] = useState(paperData[0]?.id ?? 1);
-    const [activeTab, setActiveTab] = useState<Tab>("exam");
+    const [selectedSection, setSelectedSection] = useState(sectionNames[0] ?? "");
+    const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
+    const [activeTitle, setActiveTitle] = useState("");
+    const [activePaperId, setActivePaperId] = useState(0);
     const [questionIndex, setQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string>>({});
     const [submitted, setSubmitted] = useState(false);
     const [secondsLeft, setSecondsLeft] = useState(EXAM_SECONDS);
+    const [examStarted, setExamStarted] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [penalties, setPenalties] = useState(0);
+    const [darkMode, setDarkMode] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
@@ -29,16 +40,14 @@ export default function Home() {
     const [attempts, setAttempts] = useState<SavedAttempt[]>([]);
 
     const selectedPaper = paperData.find((paper) => paper.id === selectedPaperId) ?? paperData[0];
-    const currentQuestion = selectedPaper?.questions[questionIndex];
-    const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
+    const currentQuestion = activeQuestions[questionIndex];
     const paperAttempts = attempts.filter((attempt) => attempt.paper_id === selectedPaperId);
     const attemptsLeft = Math.max(0, 3 - paperAttempts.length);
     const summary = useMemo(() => {
-        const allQuestions = selectedPaper?.questions ?? [];
-        const answered = allQuestions.filter((question) => answers[question.id]);
+        const answered = activeQuestions.filter((question) => answers[question.id]);
         const correct = answered.filter((question) => answers[question.id] === question.correctAns);
-        return { total: allQuestions.length, answered: answered.length, correct: correct.length, wrong: answered.length - correct.length, skipped: allQuestions.length - answered.length };
-    }, [answers, selectedPaper]);
+        return { total: activeQuestions.length, answered: answered.length, correct: correct.length, wrong: answered.length - correct.length, skipped: activeQuestions.length - answered.length, finalScore: Math.max(0, correct.length - penalties) };
+    }, [activeQuestions, answers, penalties]);
 
     useEffect(() => {
         if (!supabase) return;
@@ -48,120 +57,80 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        if (!supabase || !userEmail) {
-            setAttempts([]);
-            return;
-        }
-        supabase.from("attempts").select("id,paper_id,paper_name,score,total_questions,correct_count,wrong_count,skipped_count,created_at").order("created_at", { ascending: false }).then(({ data }) => setAttempts((data as SavedAttempt[]) ?? []));
+        if (!supabase || !userEmail) { setAttempts([]); return; }
+        supabase.from("attempts").select("id,paper_id,paper_name,score,total_questions,correct_count,wrong_count,skipped_count,penalty_count,created_at").order("created_at", { ascending: false }).then(({ data }) => setAttempts((data as SavedAttempt[]) ?? []));
     }, [userEmail, submitted]);
 
     useEffect(() => {
-        if (submitted || activeTab !== "exam" || attemptsLeft === 0) return;
+        if (!examStarted || submitted) return;
         const timer = window.setInterval(() => setSecondsLeft((current) => {
-            if (current <= 1) {
-                window.clearInterval(timer);
-                setSubmitted(true);
-                setActiveTab("results");
-                return 0;
-            }
+            if (current <= 1) { window.clearInterval(timer); submitExam(); return 0; }
             return current - 1;
         }), 1000);
         return () => window.clearInterval(timer);
-    }, [activeTab, attemptsLeft, submitted]);
+    }, [examStarted, submitted]);
+
+    useEffect(() => {
+        function onFullscreenChange() {
+            const fullscreen = Boolean(document.fullscreenElement);
+            setIsFullscreen(fullscreen);
+            if (examStarted && !submitted && !fullscreen) setPenalties((current) => current + 1);
+        }
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    }, [examStarted, submitted]);
 
     const timeLabel = `${String(Math.floor(secondsLeft / 3600)).padStart(2, "0")}:${String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
 
-    function changePaper(paperId: number) {
-        setSelectedPaperId(paperId);
-        setQuestionIndex(0);
-        setAnswers({});
-        setSubmitted(false);
-        setSecondsLeft(EXAM_SECONDS);
-        setSaveMessage("");
-        setActiveTab("exam");
+    function questionsForSection(section: string) { return paperData.flatMap((paper) => paper.questions.filter((question) => question.section === section)); }
+    function shuffled(items: Question[]) { return [...items].sort(() => Math.random() - 0.5); }
+
+    async function beginExam(nextMode: Mode, paper?: Paper) {
+        const questions = nextMode === "paper" ? (paper?.questions ?? []) : nextMode === "section" ? questionsForSection(selectedSection) : shuffled(paperData.flatMap((item) => item.questions));
+        if (!questions.length || (nextMode === "paper" && attemptsLeft === 0)) return;
+        setMode(nextMode);
+        setActiveQuestions(nextMode === "shuffle" ? questions.slice(0, 60) : questions);
+        setActiveTitle(nextMode === "paper" ? paper?.name ?? "Paper" : nextMode === "section" ? selectedSection : "Shuffle challenge");
+        setActivePaperId(nextMode === "paper" ? paper?.id ?? 0 : 0);
+        setAnswers({}); setQuestionIndex(0); setSubmitted(false); setPenalties(0); setSecondsLeft(EXAM_SECONDS); setSaveMessage(""); setTab("practice"); setExamStarted(true);
+        try { await document.documentElement.requestFullscreen?.(); } catch { setSaveMessage("Fullscreen was blocked by the browser. You can continue, but leaving the exam will count as a penalty."); }
     }
 
-    function startNewAttempt() {
-        if (attemptsLeft === 0) return;
-        setAnswers({});
-        setQuestionIndex(0);
-        setSubmitted(false);
-        setSecondsLeft(EXAM_SECONDS);
-        setSaveMessage("");
-        setActiveTab("exam");
-    }
-
-    function submitPaper() {
-        setSubmitted(true);
-        setActiveTab("results");
-        setSaveMessage("");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    function submitExam() { setSubmitted(true); setExamStarted(false); setTab("results"); if (document.fullscreenElement) document.exitFullscreen?.(); }
+    function resetToDashboard() { setExamStarted(false); setSubmitted(false); setActiveQuestions([]); setAnswers({}); setTab("papers"); if (document.fullscreenElement) document.exitFullscreen?.(); }
 
     async function handleAuth() {
         if (!supabase) return setAuthMessage("Supabase environment variables are missing.");
         const result = authMode === "sign-in" ? await supabase.auth.signInWithPassword({ email, password }) : await supabase.auth.signUp({ email, password });
         setAuthMessage(result.error ? result.error.message : authMode === "sign-up" ? "Account created. Check your email if confirmation is enabled." : "Signed in.");
     }
-
-    async function signOut() {
-        await supabase?.auth.signOut();
-        setUserEmail(null);
-        setAttempts([]);
-    }
-
+    async function signOut() { await supabase?.auth.signOut(); setUserEmail(null); setAttempts([]); }
     async function saveAttempt() {
-        if (!supabase || !selectedPaper) return setSaveMessage("Supabase is not configured.");
+        if (!supabase || !activeQuestions.length) return setSaveMessage("Supabase is not configured.");
         if (!userEmail) return setSaveMessage("Sign in above before saving this attempt.");
-        if (paperAttempts.length >= 3) return setSaveMessage("You have used all 3 attempts for this paper.");
+        if (activePaperId && paperAttempts.length >= 3) return setSaveMessage("You have used all 3 attempts for this paper.");
         const { data } = await supabase.auth.getUser();
         if (!data.user) return setSaveMessage("Sign in above before saving this attempt.");
-        const { error } = await supabase.from("attempts").insert({ user_id: data.user.id, paper_id: selectedPaper.id, paper_name: selectedPaper.name, score: summary.correct, total_questions: summary.total, correct_count: summary.correct, wrong_count: summary.wrong, skipped_count: summary.skipped, answers });
-        setSaveMessage(error ? error.message : "Attempt saved. You have been credited with one attempt.");
+        const { error } = await supabase.from("attempts").insert({ user_id: data.user.id, paper_id: activePaperId, paper_name: activeTitle, score: summary.finalScore, total_questions: summary.total, correct_count: summary.correct, wrong_count: summary.wrong, skipped_count: summary.skipped, penalty_count: penalties, answers });
+        setSaveMessage(error ? error.message : "Attempt saved to your account.");
     }
-
     async function copyResults() {
-        if (!selectedPaper) return;
-        const text = [`${selectedPaper.name} - Infosys SE Prep`, `Score: ${summary.correct}/${summary.total} | Correct: ${summary.correct} | Wrong: ${summary.wrong} | Skipped: ${summary.skipped}`, "", ...selectedPaper.questions.map((question) => `Q${question.qNumber} [${!answers[question.id] ? "SKIPPED" : answers[question.id] === question.correctAns ? "CORRECT" : "WRONG"}] Your answer: ${answers[question.id] || "-"} | Correct answer: ${question.correctAns || "-"}\nExplanation: ${question.explanation || "Not available"}\nTrick: ${question.trick || "Not available"}`)].join("\n");
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1800);
+        const text = [`${activeTitle} - Infosys SE Prep`, `Score: ${summary.finalScore}/${summary.total} | Correct: ${summary.correct} | Wrong: ${summary.wrong} | Skipped: ${summary.skipped} | Penalties: ${penalties}`, "", ...activeQuestions.map((question) => `Q${question.qNumber} [${!answers[question.id] ? "SKIPPED" : answers[question.id] === question.correctAns ? "CORRECT" : "WRONG"}] Your answer: ${answers[question.id] || "-"} | Correct answer: ${question.correctAns || "-"}\nExplanation: ${question.explanation || "Not available"}\nTrick: ${question.trick || "Not available"}`)].join("\n");
+        await navigator.clipboard.writeText(text); setCopied(true); window.setTimeout(() => setCopied(false), 1800);
     }
 
-    async function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            await document.documentElement.requestFullscreen?.();
-            setIsFullscreen(true);
-        } else {
-            await document.exitFullscreen?.();
-            setIsFullscreen(false);
-        }
-    }
-
-    return <main className={styles.shell}>
-        <header className={styles.header}><div className={styles.brand}><span className={styles.brandMark}>IS</span><div><p className={styles.kicker}>CANDIDATE CONSOLE / 2026</p><h1>Infosys SE Prep</h1></div></div><div className={styles.headerRight}><div className={`${styles.timer} ${secondsLeft < 300 ? styles.timerUrgent : ""}`}><span>TIME LEFT</span><strong>{timeLabel}</strong></div>{userEmail ? <div className={styles.account}><span>{userEmail}</span><button onClick={signOut}>Sign out</button></div> : <div className={styles.auth}><input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} /><input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} /><button onClick={handleAuth}>{authMode === "sign-in" ? "Sign in" : "Create account"}</button><button className={styles.authSwitch} onClick={() => setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in")}>{authMode === "sign-in" ? "Create account" : "Back to sign in"}</button>{authMessage && <small>{authMessage}</small>}</div>}</div></header>
-        <section className={styles.examLayout}>
-            <aside className={styles.sidebar} aria-label="Question papers"><div className={styles.sidebarHeading}><p className={styles.label}>PAPERS</p><span>{paperData.length} sets</span></div>{paperData.map((paper) => <button key={paper.id} className={`${styles.paperButton} ${paper.id === selectedPaper?.id ? styles.active : ""}`} onClick={() => changePaper(paper.id)}><span>0{paper.id}</span><strong>{paper.name}</strong><small>{paper.totalQ} questions</small></button>)}</aside>
-            <section className={styles.examMain}>{selectedPaper && <><nav className={styles.tabs} aria-label="Exam navigation"><button className={activeTab === "exam" ? styles.tabActive : ""} onClick={() => setActiveTab("exam")}>Exam room</button><button className={activeTab === "results" ? styles.tabActive : ""} onClick={() => submitted && setActiveTab("results")} disabled={!submitted}>Results</button><button className={activeTab === "history" ? styles.tabActive : ""} onClick={() => setActiveTab("history")}>My attempts <span>{paperAttempts.length}/3</span></button><button className={styles.fullscreenButton} onClick={toggleFullscreen}>{isFullscreen ? "Exit full screen" : "Full screen"}</button></nav>
-                {activeTab === "exam" && <ExamRoom paper={selectedPaper} question={currentQuestion} questionIndex={questionIndex} answers={answers} submitted={submitted} attemptsLeft={attemptsLeft} onAnswer={(answer) => currentQuestion && setAnswers((current) => ({ ...current, [currentQuestion.id]: answer }))} onJump={setQuestionIndex} onSubmit={submitPaper} />}
-                {activeTab === "results" && <Results paper={selectedPaper} answers={answers} summary={summary} copied={copied} saveMessage={saveMessage} onCopy={copyResults} onSave={saveAttempt} onRetry={startNewAttempt} attemptsLeft={attemptsLeft} />}
-                {activeTab === "history" && <History attempts={attempts} selectedPaperId={selectedPaper.id} attemptsLeft={attemptsLeft} />}
-            </>}</section>
-        </section>
+    return <main className={`${styles.shell} ${darkMode ? styles.dark : ""}`}>
+        <header className={styles.header}><div className={styles.brand}><span className={styles.brandMark}>IS</span><div><p className={styles.kicker}>CANDIDATE CONSOLE / 2026</p><h1>Infosys SE Prep</h1></div></div><div className={styles.headerRight}><button className={styles.themeButton} onClick={() => setDarkMode((value) => !value)}>{darkMode ? "Light mode" : "Dark mode"}</button>{examStarted && <div className={`${styles.timer} ${secondsLeft < 300 ? styles.timerUrgent : ""}`}><span>TIME LEFT</span><strong>{timeLabel}</strong></div>}{userEmail ? <div className={styles.account}><span>{userEmail}</span><button onClick={signOut}>Sign out</button></div> : <div className={styles.auth}><input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} /><input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} /><button onClick={handleAuth}>{authMode === "sign-in" ? "Sign in" : "Create account"}</button><button className={styles.authSwitch} onClick={() => setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in")}>{authMode === "sign-in" ? "Create account" : "Back to sign in"}</button>{authMessage && <small>{authMessage}</small>}</div>}</div></header>
+        {examStarted ? <ExamShell title={activeTitle} questions={activeQuestions} currentQuestion={currentQuestion} questionIndex={questionIndex} answers={answers} penalties={penalties} onAnswer={(answer) => currentQuestion && setAnswers((current) => ({ ...current, [currentQuestion.id]: answer }))} onJump={setQuestionIndex} onSubmit={submitExam} onExit={resetToDashboard} /> : <section className={styles.dashboard}><nav className={styles.tabs}><button className={tab === "papers" ? styles.tabActive : ""} onClick={() => setTab("papers")}>Exam papers</button><button className={tab === "practice" ? styles.tabActive : ""} onClick={() => setTab("practice")}>Practice sets</button><button className={tab === "history" ? styles.tabActive : ""} onClick={() => setTab("history")}>My attempts</button></nav>{tab === "papers" && <PaperDashboard papers={paperData} attempts={attempts} onStart={(paper) => beginExam("paper", paper)} />}{tab === "practice" && <PracticeDashboard selectedSection={selectedSection} onSection={setSelectedSection} onStart={(nextMode) => beginExam(nextMode)} />}{tab === "history" && <History attempts={attempts} />}{tab === "results" && <Results questions={activeQuestions} title={activeTitle} answers={answers} summary={summary} penalties={penalties} copied={copied} saveMessage={saveMessage} onCopy={copyResults} onSave={saveAttempt} onBack={resetToDashboard} />}</section>}
     </main>;
 }
 
-function ExamRoom({ paper, question, questionIndex, answers, submitted, attemptsLeft, onAnswer, onJump, onSubmit }: { paper: Paper; question?: Question; questionIndex: number; answers: Record<number, string>; submitted: boolean; attemptsLeft: number; onAnswer: (answer: string) => void; onJump: (index: number) => void; onSubmit: () => void }) {
-    const sectionNames = [...new Set(paper.questions.map((item) => item.section).filter(Boolean))];
-    const options = question ? [["A", question.optA], ["B", question.optB], ["C", question.optC], ["D", question.optD]] : [];
-    return <div className={styles.room}><div className={styles.roomTop}><div><p className={styles.kicker}>LIVE ASSESSMENT</p><h2>{paper.name}</h2><p>Attempt {4 - attemptsLeft} of 3 · {paper.totalQ} questions · 60 minutes</p></div><div className={styles.attemptBadge}>{attemptsLeft} attempts left</div></div><div className={styles.progressTrack}><span style={{ width: `${((questionIndex + 1) / paper.questions.length) * 100}%` }} /></div><div className={styles.examGrid}><aside className={styles.navigator}><p className={styles.label}>QUESTION MAP</p><div className={styles.legend}><span className={styles.legendCurrent}>Current</span><span className={styles.legendDone}>Answered</span><span>Open</span></div><div className={styles.numberGrid}>{paper.questions.map((item, index) => <button key={item.id} className={`${index === questionIndex ? styles.numberCurrent : ""} ${answers[item.id] ? styles.numberDone : ""}`} onClick={() => onJump(index)}>{item.qNumber}</button>)}</div></aside><article className={styles.questionStage}>{question && <><div className={styles.questionEyebrow}><span>QUESTION {String(questionIndex + 1).padStart(2, "0")} / {paper.totalQ}</span><span>{question.section || "General"}</span></div><h3>{question.question}</h3><div className={styles.answerGrid}>{options.map(([letter, text]) => text && <button type="button" key={letter} disabled={submitted || attemptsLeft === 0} onClick={() => onAnswer(letter)} className={`${styles.examOption} ${answers[question.id] === letter ? styles.examSelected : ""}`}><b>{letter}</b><span>{text}</span></button>)}</div><div className={styles.questionActions}><button onClick={() => onJump(Math.max(0, questionIndex - 1))} disabled={questionIndex === 0}>← Previous</button><button className={styles.nextButton} onClick={() => onJump(Math.min(paper.questions.length - 1, questionIndex + 1))}>{questionIndex === paper.questions.length - 1 ? "Review last question" : "Next question →"}</button></div></>}</article></div><div className={styles.roomFooter}><span>{Object.keys(answers).length} of {paper.totalQ} answered</span><button className={styles.submitButton} onClick={onSubmit} disabled={submitted || attemptsLeft === 0}>{attemptsLeft === 0 ? "No attempts remaining" : submitted ? "Submitted" : "Submit exam"}</button></div></div>;
-}
+function PaperDashboard({ papers, attempts, onStart }: { papers: Paper[]; attempts: SavedAttempt[]; onStart: (paper: Paper) => void }) { return <section className={styles.dashboardInner}><div className={styles.dashboardIntro}><div><p className={styles.kicker}>FULL LENGTH ASSESSMENTS</p><h2>Choose your exam paper</h2><p>Start only when you are ready. Each paper has three saved attempts and a timed exam room.</p></div><span className={styles.dashboardCount}>{papers.length} papers</span></div><div className={styles.paperGrid}>{papers.map((paper, index) => { const used = attempts.filter((attempt) => attempt.paper_id === paper.id).length; return <article className={styles.paperCard} key={paper.id}><div className={styles.cardTop}><span className={styles.cardNumber}>0{index + 1}</span><span>{used}/3 attempts</span></div><h3>{paper.name}</h3><p>{paper.totalQ} questions · 60 minutes</p><div className={styles.cardFooter}><span>{used === 3 ? "Completed" : `${3 - used} attempts available`}</span><button onClick={() => onStart(paper)} disabled={used >= 3}>{used >= 3 ? "Limit reached" : "Start exam →"}</button></div></article>; })}</div></section>; }
 
-function Results({ paper, answers, summary, copied, saveMessage, onCopy, onSave, onRetry, attemptsLeft }: { paper: Paper; answers: Record<number, string>; summary: { total: number; answered: number; correct: number; wrong: number; skipped: number }; copied: boolean; saveMessage: string; onCopy: () => void; onSave: () => void; onRetry: () => void; attemptsLeft: number }) {
-    return <section className={styles.resultView}><div className={styles.resultHero}><div><p className={styles.kicker}>ASSESSMENT REPORT</p><h2>{summary.correct} <span>/ {summary.total}</span></h2><p>{paper.name} · completed review</p></div><div className={styles.scoreRing}><strong>{Math.round((summary.correct / Math.max(1, summary.total)) * 100)}%</strong><span>score</span></div></div><div className={styles.scoreCards}><div><strong>{summary.correct}</strong><span>Correct</span></div><div><strong>{summary.wrong}</strong><span>Wrong</span></div><div><strong>{summary.skipped}</strong><span>Skipped</span></div><div><strong>{attemptsLeft}</strong><span>Attempts left</span></div></div><div className={styles.resultActions}><button className={styles.primaryButton} onClick={onSave}>Save attempt</button><button className={styles.secondaryButton} onClick={onCopy}>{copied ? "Copied" : "Copy whole result"}</button><button className={styles.secondaryButton} onClick={onRetry} disabled={attemptsLeft === 0}>Try again</button></div>{saveMessage && <p className={styles.saveMessage}>{saveMessage}</p>}<div className={styles.reviewList}>{paper.questions.map((question) => { const answer = answers[question.id]; const status = !answer ? "skipped" : answer === question.correctAns ? "correct" : "wrong"; return <article key={question.id} className={styles.reviewCard}><div className={styles.questionEyebrow}><span>Q{question.qNumber} · {status}</span><span>Your answer: {answer || "-"} · Key: {question.correctAns || "-"}</span></div><h3>{question.question}</h3><p>{question.explanation || "Explanation not available."}</p><small><b>Short trick:</b> {question.trick || "Not available."}</small></article>; })}</div></section>;
-}
+function PracticeDashboard({ selectedSection, onSection, onStart }: { selectedSection: string; onSection: (value: string) => void; onStart: (mode: Mode) => void }) { return <section className={styles.dashboardInner}><div className={styles.dashboardIntro}><div><p className={styles.kicker}>TARGETED PRACTICE</p><h2>Train by problem type</h2><p>Pull a complete section from every paper or mix the entire bank for a fresh challenge.</p></div></div><div className={styles.practiceGrid}><article className={styles.practiceCard}><span className={styles.practiceIcon}>◎</span><p className={styles.kicker}>SECTION LAB</p><h3>One section, all papers</h3><p>Reasoning, technical, verbal, pseudo code, puzzles, and English sections in one focused set.</p><select value={selectedSection} onChange={(event) => onSection(event.target.value)}>{sectionNames.map((section) => <option key={section}>{section}</option>)}</select><button onClick={() => onStart("section")}>Start section →</button></article><article className={styles.practiceCard}><span className={styles.practiceIcon}>⤨</span><p className={styles.kicker}>RANDOMIZER</p><h3>Shuffle challenge</h3><p>Receive a shuffled set of up to 60 questions from all seven papers with the same timed rules.</p><button onClick={() => onStart("shuffle")}>Shuffle and start →</button></article></div></section>; }
 
-function History({ attempts, selectedPaperId, attemptsLeft }: { attempts: SavedAttempt[]; selectedPaperId: number; attemptsLeft: number }) {
-    const paperAttempts = attempts.filter((attempt) => attempt.paper_id === selectedPaperId);
-    return <section className={styles.historyView}><p className={styles.kicker}>PERSONAL PROGRESS</p><h2>My attempts</h2><p className={styles.historyIntro}>Three shots per paper. Your saved results stay tied to your account.</p><div className={styles.attemptMeter}><span style={{ width: `${((3 - attemptsLeft) / 3) * 100}%` }} /></div><p className={styles.meterLabel}>{3 - attemptsLeft} of 3 attempts used for this paper</p>{paperAttempts.length ? paperAttempts.map((attempt, index) => <article className={styles.historyCard} key={attempt.id}><span className={styles.historyIndex}>0{index + 1}</span><div><strong>{attempt.paper_name}</strong><small>{new Date(attempt.created_at).toLocaleString()}</small></div><b>{attempt.score}/{attempt.total_questions}</b></article>) : <div className={styles.empty}>No saved attempts for this paper yet.</div>}</section>;
-}
+function ExamShell({ title, questions, currentQuestion, questionIndex, answers, penalties, onAnswer, onJump, onSubmit, onExit }: { title: string; questions: Question[]; currentQuestion?: Question; questionIndex: number; answers: Record<number, string>; penalties: number; onAnswer: (answer: string) => void; onJump: (index: number) => void; onSubmit: () => void; onExit: () => void }) { const options = currentQuestion ? [["A", currentQuestion.optA], ["B", currentQuestion.optB], ["C", currentQuestion.optC], ["D", currentQuestion.optD]] : []; return <section className={styles.examScreen}><div className={styles.examBar}><div><p className={styles.kicker}>SECURE EXAM MODE</p><strong>{title}</strong></div><div className={styles.examBarActions}><span className={styles.penaltyNotice}>{penalties ? `${penalties} exit penalty` : "Fullscreen active"}</span><button onClick={onExit}>Exit exam</button></div></div><div className={styles.examProgress}><span style={{ width: `${((questionIndex + 1) / questions.length) * 100}%` }} /></div><div className={styles.examBody}><aside className={styles.navigator}><p className={styles.label}>QUESTION MAP</p><div className={styles.numberGrid}>{questions.map((question, index) => <button key={question.id} className={`${index === questionIndex ? styles.numberCurrent : ""} ${answers[question.id] ? styles.numberDone : ""}`} onClick={() => onJump(index)}>{index + 1}</button>)}</div></aside><article className={styles.liveQuestion}><div className={styles.questionEyebrow}><span>QUESTION {String(questionIndex + 1).padStart(2, "0")} / {questions.length}</span><span>{currentQuestion?.section || "General"}</span></div><h2>{currentQuestion?.question}</h2><div className={styles.answerGrid}>{options.map(([letter, text]) => text && <button key={letter} className={`${styles.examOption} ${answers[currentQuestion?.id ?? 0] === letter ? styles.examSelected : ""}`} onClick={() => onAnswer(letter)}><b>{letter}</b><span>{text}</span></button>)}</div><div className={styles.questionActions}><button onClick={() => onJump(Math.max(0, questionIndex - 1))} disabled={questionIndex === 0}>← Previous</button><button className={styles.nextButton} onClick={() => onJump(Math.min(questions.length - 1, questionIndex + 1))}>{questionIndex === questions.length - 1 ? "Review" : "Next →"}</button></div></article></div><footer className={styles.examFooter}><span>{Object.keys(answers).length}/{questions.length} answered · {penalties} penalties</span><button className={styles.primaryButton} onClick={onSubmit}>Submit exam</button></footer></section>; }
+
+function Results({ questions, title, answers, summary, penalties, copied, saveMessage, onCopy, onSave, onBack }: { questions: Question[]; title: string; answers: Record<number, string>; summary: { total: number; answered: number; correct: number; wrong: number; skipped: number; finalScore: number }; penalties: number; copied: boolean; saveMessage: string; onCopy: () => void; onSave: () => void; onBack: () => void }) { return <section className={styles.resultView}><div className={styles.resultHero}><div><p className={styles.kicker}>ASSESSMENT REPORT</p><h2>{summary.finalScore} <span>/ {summary.total}</span></h2><p>{title} · {penalties} fullscreen penalties</p></div><div className={styles.scoreRing}><strong>{Math.round((summary.finalScore / Math.max(1, summary.total)) * 100)}%</strong><span>final score</span></div></div><div className={styles.scoreCards}><div><strong>{summary.correct}</strong><span>Correct</span></div><div><strong>{summary.wrong}</strong><span>Wrong</span></div><div><strong>{summary.skipped}</strong><span>Skipped</span></div><div><strong>{penalties}</strong><span>Penalties</span></div></div><div className={styles.resultActions}><button className={styles.primaryButton} onClick={onSave}>Save attempt</button><button className={styles.secondaryButton} onClick={onCopy}>{copied ? "Copied" : "Copy whole result"}</button><button className={styles.secondaryButton} onClick={onBack}>Back to dashboard</button></div>{saveMessage && <p className={styles.saveMessage}>{saveMessage}</p>}<div className={styles.reviewList}>{questions.map((question) => <article className={styles.reviewCard} key={question.id}><div className={styles.questionEyebrow}><span>Q{question.qNumber} · {!answers[question.id] ? "skipped" : answers[question.id] === question.correctAns ? "correct" : "wrong"}</span><span>Your answer: {answers[question.id] || "-"} · Key: {question.correctAns || "-"}</span></div><h3>{question.question}</h3><p>{question.explanation || "Explanation not available."}</p><small><b>Short trick:</b> {question.trick || "Not available."}</small></article>)}</div></section>; }
+
+function History({ attempts }: { attempts: SavedAttempt[] }) { return <section className={styles.historyView}><p className={styles.kicker}>PERSONAL PROGRESS</p><h2>My attempts</h2><p className={styles.historyIntro}>Saved exam results and section practice sessions.</p>{attempts.length ? attempts.map((attempt) => <article className={styles.historyCard} key={attempt.id}><div><strong>{attempt.paper_name}</strong><small>{new Date(attempt.created_at).toLocaleString()}</small></div><b>{attempt.score}/{attempt.total_questions}</b><span>{attempt.penalty_count ?? 0} penalties</span></article>) : <div className={styles.empty}>Sign in and save an attempt to see your history.</div>}</section>; }
