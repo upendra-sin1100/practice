@@ -86,7 +86,7 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 5px;
-    max-width: 375px;
+    max-width: 520px;
 }
 
 .auth small,
@@ -98,12 +98,16 @@
 }
 
 .auth input {
-    width: 110px;
+    width: 145px;
     border: 1px solid #528dbb;
     padding: 8px;
     background: #0e4d83;
     color: white;
     outline: 0;
+}
+
+.auth input[type="email"] {
+    width: 240px;
 }
 
 .auth input::placeholder {
@@ -755,6 +759,16 @@
     .auth small,
     .account span {
         text-align: left;
+    }
+
+    .auth {
+        width: 100%;
+    }
+
+    .auth input,
+    .auth input[type="email"] {
+        box-sizing: border-box;
+        width: 100%;
     }
 
     .tabs {
