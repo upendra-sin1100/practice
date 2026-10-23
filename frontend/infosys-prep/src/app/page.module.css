@@ -366,6 +366,29 @@
     gap: 14px;
 }
 
+.examTimer {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--text);
+    font: 700 12px var(--font-geist-mono), monospace;
+}
+
+.examTimer span {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.examTimer strong {
+    min-width: 76px;
+    color: var(--blue);
+    font-size: 18px;
+}
+
+.examTimerUrgent strong {
+    color: #bd6870;
+}
+
 .examBar button {
     border: 1px solid #bd6870;
     padding: 8px 11px;
